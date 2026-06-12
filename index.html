@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kolkata HVAC Supply — Transparent Prices</title>
+<style>
+  :root{
+    --ink:#11201c;
+    --paper:#f3efe6;
+    --card:#ffffff;
+    --line:#d8d2c4;
+    --brass:#b4742a;      /* copper / brass — HVAC material */
+    --brass-deep:#8a4f12;
+    --steel:#3f5b54;      /* galvanised steel green-grey */
+    --ok:#1f7a4d;
+    --muted:#6b6457;
+    --shadow:0 1px 0 rgba(0,0,0,.04), 0 8px 24px -16px rgba(17,32,28,.5);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- header ---------- */
+  header{
+    background:var(--ink);
+    color:var(--paper);
+    padding:18px 20px 16px;
+    position:sticky;top:0;z-index:40;
+  }
+  .wrap{max-width:1040px;margin:0 auto}
+  .brandrow{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .logo{
+    font-weight:800;font-size:22px;letter-spacing:-.5px;
+    display:flex;align-items:center;gap:9px;
+  }
+  .logo .dot{width:11px;height:11px;border-radius:50%;
+    background:var(--brass);box-shadow:0 0 0 3px rgba(180,116,42,.25)}
+  .tagline{font-size:13px;color:#b9c4bf}
+  .trustbar{
+    display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;
+  }
+  .pill{
+    font-size:12.5px;font-weight:600;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.16);
+    padding:5px 11px;border-radius:999px;display:flex;align-items:center;gap:6px;
+  }
+  .pill b{color:var(--brass)}
+  /* ---------- controls ---------- */
+  .controls{
+    position:sticky;top:0;z-index:30;
+    background:var(--paper);
+    padding:14px 20px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .searchrow{display:flex;gap:10px;flex-wrap:wrap}
+  #search{
+    flex:1;min-width:220px;
+    padding:13px 14px;border:1.5px solid var(--line);border-radius:10px;
+    font-size:16px;background:var(--card);
+  }
+  #search:focus{outline:none;border-color:var(--brass)}
+  .cats{display:flex;gap:7px;overflow-x:auto;margin-top:11px;padding-bottom:3px}
+  .cat{
+    white-space:nowrap;font-size:13.5px;font-weight:600;cursor:pointer;
+    padding:7px 13px;border-radius:999px;border:1.5px solid var(--line);
+    background:var(--card);color:var(--muted);
+  }
+  .cat.on{background:var(--steel);color:#fff;border-color:var(--steel)}
+  /* ---------- list ---------- */
+  main{max-width:1040px;margin:0 auto;padding:14px 20px 130px}
+  .status{padding:30px 4px;color:var(--muted);font-size:15px}
+  .group-h{
+    font-size:13px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;
+    color:var(--brass-deep);margin:22px 2px 9px;
+  }
+  .item{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:13px 14px;margin-bottom:9px;
+    display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);
+  }
+  .item .info{flex:1;min-width:0}
+  .item .name{font-weight:700;font-size:15.5px;line-height:1.25}
+  .item .spec{font-size:13px;color:var(--muted);margin-top:3px}
+  .item .price{
+    font-weight:800;font-size:18px;white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+  }
+  .item .price small{font-weight:600;font-size:12px;color:var(--muted)}
+  .qty{display:flex;align-items:center;gap:0;border:1.5px solid var(--line);
+    border-radius:9px;overflow:hidden}
+  .qty button{
+    width:34px;height:34px;border:none;background:#f6f3ec;font-size:19px;
+    font-weight:700;cursor:pointer;color:var(--ink);line-height:1;
+  }
+  .qty button:active{background:#ece7db}
+  .qty span{min-width:30px;text-align:center;font-weight:700;font-size:15px;
+    font-variant-numeric:tabular-nums}
+  .qty.empty button.minus{color:#c9c2b3}
+  /* ---------- order tray ---------- */
+  .tray{
+    position:fixed;left:0;right:0;bottom:0;z-index:50;
+    background:var(--ink);color:#fff;
+    transform:translateY(calc(100% - 62px));
+    transition:transform .28s cubic-bezier(.4,.2,.2,1);
+    box-shadow:0 -10px 30px -12px rgba(0,0,0,.5);
+  }
+  .tray.open{transform:translateY(0)}
+  .tray-handle{
+    height:62px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 20px;cursor:pointer;max-width:1040px;margin:0 auto;
+  }
+  .tray-handle .count{font-weight:700;font-size:15px;display:flex;align-items:center;gap:9px}
+  .tray-handle .chip{background:var(--brass);color:#fff;border-radius:999px;
+    min-width:24px;height:24px;display:inline-flex;align-items:center;
+    justify-content:center;font-size:13px;padding:0 7px}
+  .tray-handle .arrow{color:#aeb9b4;font-size:13px}
+  .tray-body{max-width:1040px;margin:0 auto;padding:2px 20px 22px;
+    max-height:46vh;overflow-y:auto}
+  .tray-line{display:flex;justify-content:space-between;gap:10px;
+    padding:9px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:14.5px}
+  .tray-line .ln{color:#cdd6d2}
+  .tray-empty{color:#9aa8a3;padding:16px 0 4px;font-size:14px}
+  .tray-total{display:flex;justify-content:space-between;font-weight:800;
+    font-size:18px;padding:13px 0 4px}
+  .cta{
+    display:block;width:100%;text-align:center;text-decoration:none;
+    background:var(--ok);color:#fff;font-weight:800;font-size:17px;
+    padding:15px;border-radius:11px;margin-top:12px;border:none;cursor:pointer;
+  }
+  .cta:active{filter:brightness(.94)}
+  .cta .sub{display:block;font-size:12.5px;font-weight:600;opacity:.85;margin-top:2px}
+  .clearbtn{background:none;border:none;color:#cdd6d2;font-size:13px;
+    text-decoration:underline;cursor:pointer;margin-top:10px;padding:4px}
+  footer{max-width:1040px;margin:0 auto;padding:8px 20px 40px;
+    color:var(--muted);font-size:12.5px;line-height:1.6}
+  @media(max-width:520px){
+    .item .price{font-size:16px}
+    .logo{font-size:19px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brandrow">
+      <div class="logo"><span class="dot"></span>Kolkata HVAC Supply</div>
+      <div class="tagline">One honest price list. No haggling.</div>
+    </div>
+    <div class="trustbar">
+      <span class="pill"><b>✓</b> Cash on delivery — inspect, then pay</span>
+      <span class="pill"><b>✓</b> Kolkata &amp; Howrah only</span>
+      <span class="pill"><b>☎</b> Order by phone</span>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="wrap">
+    <div class="searchrow">
+      <input id="search" type="text" placeholder="Search item, size or brand — e.g. nitrile 19mm, copper coil…" autocomplete="off">
+    </div>
+    <div class="cats" id="cats"></div>
+  </div>
+</div>
+
+<main>
+  <div id="status" class="status">Loading price list…</div>
+  <div id="list"></div>
+</main>
+
+<footer class="wrap">
+  Prices in ₹, inclusive unless noted. We deliver only within Kolkata &amp; Howrah.
+  Pay cash after you inspect the item. Prices may change with the market — call to confirm.
+</footer>
+
+<!-- order tray -->
+<div class="tray" id="tray">
+  <div class="tray-handle" id="trayHandle">
+    <div class="count"><span class="chip" id="chip">0</span> Your order list</div>
+    <div class="arrow" id="arrow">tap to view ▲</div>
+  </div>
+  <div class="tray-body">
+    <div id="trayLines"></div>
+    <div class="tray-total" id="trayTotal" style="display:none">
+      <span>Estimated total</span><span id="totalVal">₹0</span>
+    </div>
+    <button class="cta" id="callBtn">
+      ☎ Call to order — 0900 000 0000
+      <span class="sub">Read out your list. Pay cash on delivery.</span>
+    </button>
+    <button class="clearbtn" id="clearBtn" style="display:none">Clear list</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG — change these two lines and you're live.
+   1. PHONE: your shop number (digits only for the dial link).
+   2. SHEET_CSV: your Google Sheet published-to-web CSV link.
+      In Sheets: File ▸ Share ▸ Publish to web ▸ choose the
+      sheet ▸ Comma-separated values (.csv) ▸ Publish.
+      Columns expected (row 1 = headers, exact names):
+      category | name | spec | price | unit
+   If SHEET_CSV is left blank, the demo data below is shown.
+   ============================================================ */
+const PHONE = "9000000000";
+const SHEET_CSV = ""; // paste your published CSV url here
+
+const DEMO = [
+  {category:"Insulation", name:"Nitrile Rubber Sheet", spec:"19mm, Class O", price:185, unit:"sq.ft"},
+  {category:"Insulation", name:"Nitrile Rubber Sheet", spec:"13mm, Class O", price:135, unit:"sq.ft"},
+  {category:"Insulation", name:"Nitrile Tube", spec:"22mm ID x 13mm wall", price:62, unit:"mtr"},
+  {category:"Insulation", name:"Aluminium Foil Tape", spec:"48mm x 40m", price:210, unit:"roll"},
+  {category:"Copper", name:"Copper Pipe (soft)", spec:"1/4 inch, 0.71mm", price:340, unit:"mtr"},
+  {category:"Copper", name:"Copper Pipe (soft)", spec:"3/8 inch, 0.71mm", price:520, unit:"mtr"},
+  {category:"Copper", name:"Copper Coil 15m", spec:"1/2 inch pancake", price:7900, unit:"coil"},
+  {category:"Ducting", name:"GI Sheet", spec:"24 gauge", price:118, unit:"kg"},
+  {category:"Ducting", name:"Flexible Duct", spec:"6 inch insulated", price:430, unit:"mtr"},
+  {category:"Ducting", name:"MS Slotted Angle", spec:"2mm, 1.5 inch", price:96, unit:"kg"},
+  {category:"Fittings", name:"Flare Nut (brass)", spec:"1/2 inch", price:38, unit:"pc"},
+  {category:"Fittings", name:"PVC Drain Pipe", spec:"1 inch", price:44, unit:"mtr"},
+  {category:"Consumables", name:"Refrigerant R-32", spec:"3 kg can", price:1450, unit:"can"},
+  {category:"Consumables", name:"Brazing Rod 2%", spec:"per stick", price:78, unit:"pc"},
+];
+
+let ITEMS = [];
+let activeCat = "All";
+let query = "";
+const cart = {}; // key -> {item, qty}
+
+const keyOf = it => (it.category+"|"+it.name+"|"+it.spec).toLowerCase();
+const rupee = n => "₹"+Number(n).toLocaleString("en-IN");
+
+/* ---- load data ---- */
+async function load(){
+  if(!SHEET_CSV){ ITEMS = DEMO; render(); markDemo(); return; }
+  try{
+    const res = await fetch(SHEET_CSV);
+    const txt = await res.text();
+    ITEMS = parseCSV(txt);
+    if(!ITEMS.length){ ITEMS = DEMO; markDemo(); }
+    render();
+  }catch(e){
+    ITEMS = DEMO; markDemo(); render();
+  }
+}
+function markDemo(){
+  document.querySelector("footer").insertAdjacentHTML("afterbegin",
+    "<div style='color:#b4742a;font-weight:700;margin-bottom:8px'>Showing sample data — connect your Google Sheet to go live.</div>");
+}
+function parseCSV(txt){
+  const rows = txt.trim().split(/\r?\n/).map(r=>{
+    // handle quoted commas
+    const out=[];let cur="",q=false;
+    for(const ch of r){
+      if(ch=='"'){q=!q;continue}
+      if(ch==','&&!q){out.push(cur);cur="";continue}
+      cur+=ch;
+    }
+    out.push(cur);return out.map(s=>s.trim());
+  });
+  const head = rows.shift().map(h=>h.toLowerCase());
+  const ci = n => head.indexOf(n);
+  return rows.filter(r=>r[ci("name")]).map(r=>({
+    category: r[ci("category")]||"Other",
+    name: r[ci("name")]||"",
+    spec: r[ci("spec")]||"",
+    price: parseFloat((r[ci("price")]||"0").replace(/[^0-9.]/g,""))||0,
+    unit: r[ci("unit")]||""
+  }));
+}
+
+/* ---- render ---- */
+function render(){
+  const cats = ["All", ...Array.from(new Set(ITEMS.map(i=>i.category)))];
+  document.getElementById("cats").innerHTML = cats.map(c=>
+    `<div class="cat ${c===activeCat?'on':''}" data-c="${c}">${c}</div>`).join("");
+
+  const q = query.toLowerCase();
+  let filtered = ITEMS.filter(i=>{
+    const inCat = activeCat==="All" || i.category===activeCat;
+    const hay = (i.name+" "+i.spec+" "+i.category).toLowerCase();
+    return inCat && (!q || hay.includes(q));
+  });
+
+  const status = document.getElementById("status");
+  const list = document.getElementById("list");
+  if(!filtered.length){
+    status.style.display="block";
+    status.textContent = "No items match that search.";
+    list.innerHTML=""; return;
+  }
+  status.style.display="none";
+
+  // group by category
+  const groups={};
+  filtered.forEach(i=>{(groups[i.category]=groups[i.category]||[]).push(i)});
+  list.innerHTML = Object.keys(groups).map(cat=>`
+    <div class="group-h">${cat}</div>
+    ${groups[cat].map(it=>itemRow(it)).join("")}
+  `).join("");
+  bindRows();
+}
+
+function itemRow(it){
+  const k = keyOf(it);
+  const qty = cart[k]?.qty||0;
+  return `<div class="item" data-k="${k}">
+    <div class="info">
+      <div class="name">${it.name}</div>
+      <div class="spec">${it.spec}${it.unit?` · per ${it.unit}`:""}</div>
+    </div>
+    <div class="price">${rupee(it.price)}${it.unit?` <small>/${it.unit}</small>`:""}</div>
+    <div class="qty ${qty?'':'empty'}">
+      <button class="minus" data-act="dec">−</button>
+      <span>${qty}</span>
+      <button class="plus" data-act="inc">+</button>
+    </div>
+  </div>`;
+}
+
+function bindRows(){
+  document.querySelectorAll(".item").forEach(row=>{
+    const k = row.dataset.k;
+    row.querySelectorAll("button").forEach(b=>{
+      b.onclick=()=>{
+        const it = ITEMS.find(i=>keyOf(i)===k);
+        change(it, b.dataset.act==="inc"?1:-1);
+        const qty = cart[k]?.qty||0;
+        row.querySelector(".qty span").textContent = qty;
+        row.querySelector(".qty").classList.toggle("empty", !qty);
+      };
+    });
+  });
+}
+
+function change(it,d){
+  const k=keyOf(it);
+  const q=(cart[k]?.qty||0)+d;
+  if(q<=0) delete cart[k];
+  else cart[k]={item:it,qty:q};
+  updateTray();
+}
+
+/* ---- tray ---- */
+function updateTray(){
+  const entries=Object.values(cart);
+  const count=entries.reduce((s,e)=>s+e.qty,0);
+  document.getElementById("chip").textContent=count;
+  const lines=document.getElementById("trayLines");
+  const totalEl=document.getElementById("trayTotal");
+  const clearBtn=document.getElementById("clearBtn");
+  if(!entries.length){
+    lines.innerHTML='<div class="tray-empty">Tap + on any item to start your list.</div>';
+    totalEl.style.display="none";clearBtn.style.display="none";return;
+  }
+  let total=0;
+  lines.innerHTML=entries.map(e=>{
+    const sub=e.item.price*e.qty; total+=sub;
+    return `<div class="tray-line">
+      <span>${e.qty} × ${e.item.name} <span class="ln">${e.item.spec}</span></span>
+      <span>${rupee(sub)}</span></div>`;
+  }).join("");
+  document.getElementById("totalVal").textContent=rupee(total);
+  totalEl.style.display="flex";clearBtn.style.display="block";
+}
+
+/* ---- events ---- */
+document.getElementById("search").addEventListener("input",e=>{query=e.target.value;render()});
+document.getElementById("cats").addEventListener("click",e=>{
+  if(e.target.classList.contains("cat")){activeCat=e.target.dataset.c;render()}
+});
+const tray=document.getElementById("tray");
+document.getElementById("trayHandle").addEventListener("click",()=>{
+  tray.classList.toggle("open");
+  document.getElementById("arrow").textContent=
+    tray.classList.contains("open")?"tap to close ▼":"tap to view ▲";
+});
+document.getElementById("clearBtn").addEventListener("click",()=>{
+  for(const k in cart) delete cart[k];
+  updateTray();render();
+});
+const callBtn=document.getElementById("callBtn");
+callBtn.innerHTML=`☎ Call to order — ${PHONE.replace(/(\d{4})(\d{3})(\d{3})/,'$1 $2 $3')}
+  <span class="sub">Read out your list. Pay cash on delivery.</span>`;
+callBtn.addEventListener("click",()=>{location.href="tel:"+PHONE});
+
+load();
+updateTray();
+</script>
+</body>
+</html>
